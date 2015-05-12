@@ -1,0 +1,129 @@
+Interface All The Things
+12 May 2015
+Tags: golang interfaces
+
+Jonathan Gomez
+Engineer, Zumata
+jonathanbgomez@gmail.com
+@jonog
+
+* Overview
+# .html presentation/style.html (commented out for remote hosting)
+- What are interfaces?
+- Why they are awesome?
+- Tips / Gotchas
+- Illustrate via examples
+
+* Intro to Interfaces
+.code snippets/simple.go /START 1/,/END 1/
+- Could be read as, a `Gopher` is something that has these *behaviours* / *actions*:
+- Ability to nod
+- Ability to wink
+
+* Intro to Interfaces
+- Lets implement `Nod()` and `Wink()`:
+.code snippets/simple.go /START 3/,/END 3/
+- By having these methods, `SingGopher` *implicitly*satisfies* the `Gopher` interface.
+- i.e. don't need to explicitly state that `SingGopher` implements the interface.
+
+* Intro to Interfaces
+- With the interface satisfied, we can assign our `SingGopher` to the `Gopher` type.
+.code snippets/simple.go /START 2/,/END 2/
+.play snippets/simple.go /START PLAY/,/END PLAY/
+
+* Intro to Interfaces
+- What if a method was missing?
+.play snippets/simple_2.go /START PLAY/,/END PLAY/
+- Think in terms of *method*sets*: set of interface *⊆* set of concrete type
+
+* Why use interfaces?
+
+* Why use interfaces? Abstract and avoid repetition
+- e.g. `Gopher` processing code (*business*logic*)
+.code snippets/simple_3.go /START 1/,/END 1/
+- As new gophers are added, no change is required.
+.play snippets/simple_3.go /START PLAY/,/END PLAY/
+- Note: Can define functions and methods that take interfaces, but can't define methods on the interface (e.g. `gopher.Play()`)
+
+* Why use interfaces? Combine simple units to achieve complexity
+- Example of standard library's `io.Reader` interface:
+.code snippets/plumbing.go /START 1/,/END 1/
+- Functions/methods that take `io.Reader` arguments are indifferent to where data is coming from. e.g. `os.File`, `bytes.Buffer`, `net.Conn`, `http.Request.Body`
+.code snippets/plumbing.go /START 2/,/END 2/
+- Chain for complexity:
+.code snippets/plumbing.go /START 3/,/END 3/
+
+* Why use interfaces? Sharing patterns
+- Dropbox has a interesting caching library @ [[https://godoc.org/github.com/dropbox/godropbox/caching][github.com/dropbox/godropbox]]
+- Patterns of caching / managing storage
+.code snippets/dropbox_storage.go /START 2/,/END 2/
+- Developers gain access via implementing `Storage` on their own:
+.code snippets/dropbox_storage.go /START 1/,/END 1/
+- Tap into / contribute to the growing set of community resources
+
+* Why use interfaces? Testing
+- If our functions have interface args, we can test them with mock implementations
+- i.e. use a `FakeGopher` to test our code that depends on `Gopher`
+.code snippets/simple_4.go /START 1/,/END 1/
+.play snippets/simple_4.go /START PLAY/,/END PLAY/
+
+* Why use interfaces? Flexibility to change your lib/infra decisions
+- In one of our apps, we use a 3rd party logging library, `logrus`.
+- Avoid our codebase being coupled to it, by having an interface for logging.
+.code snippets/apps.go /START 1/,/END 1/
+- e.g. `Publisher` w/ `Publish()` (to queue) & `Mailer` & `Mail()` (3rd party service)
+- Seize opportunities to decrease coupling / increase options.
+- Better to do earlier than later.
+
+* Why use interfaces? Flexibility for package consumers
+.code snippets/koding.go
+- Interesting microservices project [[https://github.com/koding/kite][github.com/koding/kite]]
+- `Storage` interface with `Postgres` and `Etcd` implementations
+- Useful here to give the consumer options
+- Maybe unnecessary in your own app
+
+* Why use interfaces? Very natural fit for some problems
+- When standardisation is essential to design
+- *The*method*set*creates*the*standard*
+- Project to create and manage Docker hosts across providers [[https://github.com/docker/machine][github.com/docker/machine]]
+.code snippets/machine.go
+- Implementations for Amazon, Google, Digital Ocean, Azure, OpenStack, Rackspace + 
+
+* Tips: Check out the standard library
+- 100+ interfaces
+.code snippets/stdlib.go /START 1/,/END 1/
+- Convention is to name the one method interface Method-er
+- Encouragement to keep interfaces small, but it isn't a hard rule
+- Smaller = less work to satisfy
+- Where your code can be compatible with standard library / community interfaces, will be more easily useable by others
+- e.g. middleware that takes a `Handler` and returns a `Handler`
+
+* Tips: Use embedding to keep interfaces small
+- Compose larger interfaces out of smaller ones
+.code snippets/stdlib.go /START 2/,/END 2/
+- When method invoked, the receiver is the inner type, not outer
+- Will reduce code complexity, encourage simpler implementations
+
+* Tips: Type assert for accessing different functionality
+- Assume some gophers are also coders which can `Code()`
+.code snippets/upgrade.go /START 1/,/END 1/
+- Runtime type assert to see whether the `Gopher` is a `Coder` & call `Code()`
+.code snippets/upgrade.go /START 2/,/END 2/
+- Note: the coder can't call `Nod()` or `Wink()`.
+- Considered an idiom in Go to convert type to access different methods.
+
+* Tips: Interfaces and nil
+.play snippets/nil.go /START PLAY/,/END PLAY/
+- What is an interface? Implemented as a type and a value
+- If type is set, and value is a nil pointer, the interface is not nil
+- When implementing custom errors - return nil instead of interfaces with nil values.
+
+* Within reason...
+.image presentation/all-the-things.jpg _ 700
+
+* Zumata
+.image presentation/zumata-logo.png
+- Startup focused on B2B travel products, based in Block 71
+- Team of 15. Tech team of 11. Gopher team of 6.
+- Lots of nice Go use cases. Lots of new systems, refactoring, re-writes.
+- *Join*us*if*you*want*to*code*Go*daily.*
